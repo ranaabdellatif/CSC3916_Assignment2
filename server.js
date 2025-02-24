@@ -24,6 +24,8 @@ app.use(passport.initialize());
 var router = express.Router();
 
 function getJSONObjectForMovieRequirement(req) {
+
+
     var json = {
         headers: "No headers",
         key: process.env.UNIQUE_KEY,
@@ -72,30 +74,65 @@ router.post('/signin', (req, res) => {
     }
 });
 
-router.route('/testcollection')
-    .delete(authController.isAuthenticated, (req, res) => {
-        console.log(req.body);
-        res = res.status(200);
-        if (req.get('Content-Type')) {
-            res = res.type(req.get('Content-Type'));
-        }
-        var o = getJSONObjectForMovieRequirement(req);
-        res.json(o);
-    }
-    )
-    .put(authJwtController.isAuthenticated, (req, res) => {
-        console.log(req.body);
-        res = res.status(200);
-        if (req.get('Content-Type')) {
-            res = res.type(req.get('Content-Type'));
-        }
-        var o = getJSONObjectForMovieRequirement(req);
-        res.json(o);
-    }
-    );
+
     
+function getJSONObjectForMovieRequirement(req) {
+    var json = {
+        headers: "No headers",
+        key: process.env.UNIQUE_KEY,
+        body: "No body"
+    };
+
+    if (req.body != null) {
+        json.body = req.body;
+    }
+
+    if (req.headers != null) {
+        json.headers = req.headers;
+    }
+
+    return json;
+}
+
+router.route('/movies')
+    .get((req, res) => {
+        //res.status(200).send(msg: 'GET movies', headers: req.headers, query: req.query, env,)
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "GET movies";
+        res.json(o);
+    })
+    .post((req, res) => {
+
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 201;
+        o.message = "movie saved";
+        res.status(201).json(o);
+    })
+    .put(authJwtController.isAuthenticated, (req, res) => {
+
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie updated";
+        res.json(o);
+    })
+    .delete(authController.isAuthenticated, (req, res) => {
+        // HTTP DELETE Method
+        // Requires Basic authentication.
+        // Returns a JSON object with status, message, headers, query, and env.
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie deleted";
+        res.json(o);
+    })
+    .all((req, res) => {
+        // Any other HTTP Method
+        // Returns a message stating that the HTTP method is unsupported.
+        res.status(405).send({ message: 'HTTP method not supported.' });
+    });
+
+
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
 module.exports = app; // for testing only
-
 
